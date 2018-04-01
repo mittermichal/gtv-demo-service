@@ -31,8 +31,8 @@ def parse(demo_id,map_number):
     if 'gzip' not in accept_encoding.lower():
         #TODO: sent info that request has to accept gzip
         return abort(406)
-    file_path="{}\\demo{:04}.tv_84".format(demo_id,int(map_number))
-    json_path="demos\{}\demo{:04}.json".format(demo_id,int(map_number))
+    file_path="{}/demo{:04}.tv_84".format(demo_id,int(map_number))
+    json_path="jsons/{}/demo{:04}.json".format(demo_id,int(map_number))
     if os.path.isfile(json_path+'.gz'): #TODO: compare json and lib modification time
         response = make_response(open(json_path + '.gz', 'rb').read())
         response.headers['Content-Encoding'] = 'gzip'
