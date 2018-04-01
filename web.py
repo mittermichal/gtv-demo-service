@@ -31,17 +31,21 @@ def parse(demo_id,map_number):
     if 'gzip' not in accept_encoding.lower():
         #TODO: sent info that request has to accept gzip
         return abort(406)
-    file_path="{}/demo{:04}.tv_84".format(demo_id,int(map_number))
-    json_path="jsons/{}/demo{:04}.json".format(demo_id,int(map_number))
+    file_path="demos/{}/demo{:04}.tv_84".format(demo_id,int(map_number))
+    json_folder="jsons/{}".format(demo_id)
+    json_path=json_folder+"/demo{:04}.json".format(int(map_number))
+    if os.name == 'nt':
+        file_path=file_path.replace('/','\\')
+        json_path = json_path.replace('/', '\\')
     if os.path.isfile(json_path+'.gz'): #TODO: compare json and lib modification time
         response = make_response(open(json_path + '.gz', 'rb').read())
         response.headers['Content-Encoding'] = 'gzip'
         response.headers['Vary'] = 'Accept-Encoding'
         return response
-
+    os.makedirs(json_folder,exist_ok=True)
     arg = app.config['INDEXER'] % (file_path, json_path)
     subprocess.call([app.config['PARSERPATH'], 'indexer', arg])
-    #json_path=json_path.replace('\\','/')
+
     try:
         with open(json_path, 'rb') as f_in:
             with gzip.open(json_path+'.gz', 'wb') as f_out:

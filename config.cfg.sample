@@ -1,2 +1,2 @@
 PARSERPATH = 'F:\Hry\et\hannes_ettv_demo_parser_tech3\Release\Anders.Gaming.LibTech3.exe'
-INDEXER = 'indexTarget/demos\\%s/exportJsonFile/%s/exportBulletEvents/1/exportDemo/1/exportChatMessages/1'
+INDEXER = 'indexTarget/%s/exportJsonFile/%s/exportBulletEvents/1/exportDemo/1/exportChatMessages/1'
