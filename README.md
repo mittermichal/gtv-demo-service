@@ -1,4 +1,5 @@
 ## gamestv.org demo parse and cut service
+hosted at https://fr.gtv.msh100.uk/demoparse - big thanks to [Msh100](https://github.com/msh100)
 - GET /parse/demo_id - list maps
 - GET /parse/demo_id/map_number
   - compressed: `curl --compressed http://localhost:5222/parse/12/1`
