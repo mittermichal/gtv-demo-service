@@ -5,7 +5,7 @@ import os
 import subprocess
 import shutil
 import gzip
-import lib.Libtech3
+import modules.Libtech3
 
 
 app = Flask(__name__)
@@ -66,7 +66,7 @@ def cut():
     cut_name = request.form['demo_id']+"_"+request.form['map_number']+"_"+request.form['start']+"_"+request.form['end']+"_"+request.form['cut_type']+"_"+request.form['client_num']+".dm_84"
     cut_path = "cuts/"+cut_name
     try:
-        lib.Libtech3.cut(
+        modules.Libtech3.cut(
             app.config['PARSERPATH'], demo_path, cut_path, request.form['start'],
             request.form['end'], request.form['cut_type'], request.form['client_num'])
     except Exception as e:
