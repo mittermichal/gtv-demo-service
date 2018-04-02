@@ -15,16 +15,29 @@ app.config.from_pyfile('config.cfg')
 def index():
     return markdown.markdown(open('README.md', 'r').read())
 
-@app.route('/parse/<int:demo_id>')
 def list_maps(demo_id):
     #"demo0000.tv_84"
     demos=[]
     try:
         for filename in os.listdir('demos/'+str(demo_id)):
-            demos.append(int(re.search('demo(\d+)\.tv_84', filename).group(1)))
+            try:
+                demos.append({'number':int(re.search('demo(\d+)\.tv_84', filename).group(1)),'filename':filename})
+            except AttributeError:
+                pass
     except FileNotFoundError:
-        return jsonify([])
-    return jsonify(demos)
+        return []
+    return demos
+
+@app.route('/parse/<int:demo_id>')
+def list_maps_r(demo_id):
+    return jsonify(list_maps(demo_id))
+
+def get_demo_path(demo_id,map_number):
+    demos=list_maps(demo_id)
+    for demo in demos:
+        if demo['number']==map_number:
+            return "demos/{}/{}".format(demo_id,demo['filename'])
+    raise IndexError
 
 @app.route('/parse/<int:demo_id>/<int:map_number>')
 def parse(demo_id,map_number):
@@ -32,7 +45,7 @@ def parse(demo_id,map_number):
     if 'gzip' not in accept_encoding.lower():
         #TODO: sent info that request has to accept gzip
         return abort(406)
-    file_path="demos/{}/demo{:04}.tv_84".format(demo_id,int(map_number))
+    file_path=get_demo_path(demo_id,map_number)
     json_folder="jsons/{}".format(demo_id)
     json_path=json_folder+"/demo{:04}.json".format(int(map_number))
     if os.name == 'nt':
@@ -62,7 +75,7 @@ def parse(demo_id,map_number):
 
 @app.route('/cut', methods=['POST'])
 def cut():
-    demo_path = "demos/{}/demo{:04}.tv_84".format(request.form['demo_id'], int(request.form['map_number']))
+    demo_path = get_demo_path(request.form['demo_id'],int(request.form['map_number']))
     cut_name = request.form['demo_id']+"_"+request.form['map_number']+"_"+request.form['start']+"_"+request.form['end']+"_"+request.form['cut_type']+"_"+request.form['client_num']+".dm_84"
     cut_path = "cuts/"+cut_name
     try:
