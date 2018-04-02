@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify, abort, make_response, after_this_request
+from flask import Flask, request, jsonify, abort, make_response, after_this_request, send_from_directory
 import markdown
 import re
 import os
 import subprocess
 import shutil
 import gzip
+import lib.Libtech3
 
 
 app = Flask(__name__)
@@ -61,7 +62,17 @@ def parse(demo_id,map_number):
 
 @app.route('/cut', methods=['POST'])
 def cut():
-    return "TODO"
+    demo_path = "demos/{}/demo{:04}.tv_84".format(request.form['demo_id'], int(request.form['map_number']))
+    cut_name = request.form['demo_id']+"_"+request.form['map_number']+"_"+request.form['start']+"_"+request.form['end']+"_"+request.form['cut_type']+"_"+request.form['client_num']+".dm_84"
+    cut_path = "cuts/"+cut_name
+    try:
+        lib.Libtech3.cut(
+            app.config['PARSERPATH'], demo_path, cut_path, request.form['start'],
+            request.form['end'], request.form['cut_type'], request.form['client_num'])
+    except Exception as e:
+        return e
+    return send_from_directory(directory='cuts',filename=cut_name, as_attachment=True,
+                               attachment_filename=cut_name)
 
 if __name__ == "__main__":
     app.run(port=5222, host='0.0.0.0',debug=True)
