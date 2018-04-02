@@ -75,7 +75,7 @@ def parse(demo_id,map_number):
 
 @app.route('/cut', methods=['POST'])
 def cut():
-    demo_path = get_demo_path(request.form['demo_id'],int(request.form['map_number']))
+    demo_path = get_demo_path(int(request.form['demo_id']),int(request.form['map_number']))
     cut_name = request.form['demo_id']+"_"+request.form['map_number']+"_"+request.form['start']+"_"+request.form['end']+"_"+request.form['cut_type']+"_"+request.form['client_num']+".dm_84"
     cut_path = "cuts/"+cut_name
     try:
@@ -83,7 +83,7 @@ def cut():
             app.config['PARSERPATH'], demo_path, cut_path, request.form['start'],
             request.form['end'], request.form['cut_type'], request.form['client_num'])
     except Exception as e:
-        return e
+        return e.args[0]
     return send_from_directory(directory='cuts',filename=cut_name, as_attachment=True,
                                attachment_filename=cut_name)
 
