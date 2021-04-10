@@ -1,2 +1,3 @@
 PARSERPATH = 'F:\Hry\et\hannes_ettv_demo_parser_tech3\Release\Anders.Gaming.LibTech3.exe'
 INDEXER = 'indexTarget/%s/exportJsonFile/%s/exportBulletEvents/1/exportDemo/1/exportChatMessages/1'
+GTVCOOKIE = 'PHPSESSID=xxx; user=xxx; pass=xxx'

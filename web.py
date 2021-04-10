@@ -6,6 +6,8 @@ import subprocess
 import shutil
 import gzip
 import modules.Libtech3
+import modules.gamestv
+from urllib.request import HTTPError
 
 
 app = Flask(__name__)
@@ -25,11 +27,17 @@ def list_maps(demo_id):
             except AttributeError:
                 pass
     except FileNotFoundError:
-        return []
+        return {'error':'demos not found on server'}
     return demos
 
-@app.route('/parse/<int:demo_id>')
-def list_maps_r(demo_id):
+@app.route('/parse/<int:match_id>')
+def list_maps_r(match_id):
+    try:
+        demo_id = modules.gamestv.Gamestv(app.config['GTVCOOKIE']).getMatchDemosId(match_id)
+    except IndexError:
+        return jsonify({'error':'Match not available for replay'})
+    except HTTPError:
+        return jsonify({'error': 'Match not found'})
     return jsonify(list_maps(demo_id))
 
 def get_demo_path(demo_id,map_number):
@@ -39,12 +47,18 @@ def get_demo_path(demo_id,map_number):
             return "demos/{}/{}".format(demo_id,demo['filename'])
     raise IndexError
 
-@app.route('/parse/<int:demo_id>/<int:map_number>')
-def parse(demo_id,map_number):
+@app.route('/parse/<int:match_id>/<int:map_number>')
+def parse(match_id,map_number):
     accept_encoding = request.headers.get('Accept-Encoding', '')
     if 'gzip' not in accept_encoding.lower():
         #TODO: sent info that request has to accept gzip
         return abort(406)
+    try:
+        demo_id = modules.gamestv.Gamestv(app.config['GTVCOOKIE']).getMatchDemosId(match_id)
+    except IndexError:
+        return jsonify({'error':'Match not available for replay'})
+    except HTTPError:
+        return jsonify({'error': 'Match not found'})
     file_path=get_demo_path(demo_id,map_number)
     json_folder="jsons/{}".format(demo_id)
     json_path=json_folder+"/demo{:04}.json".format(int(map_number))
@@ -76,12 +90,12 @@ def parse(demo_id,map_number):
 @app.route('/cut', methods=['POST'])
 def cut():
     demo_path = get_demo_path(int(request.form['demo_id']),int(request.form['map_number']))
-    cut_name = request.form['demo_id']+"_"+request.form['map_number']+"_"+request.form['start']+"_"+request.form['end']+"_"+request.form['cut_type']+"_"+request.form['client_num']+".dm_84"
+    cut_name = request.args.get('demo_id')+"_"+request.args.get('map_number')+"_"+request.args.get('start')+"_"+request.args.get('end')+"_"+request.args.get('cut_type')+"_"+request.args.get('client_num')+".dm_84"
     cut_path = "cuts/"+cut_name
     try:
         modules.Libtech3.cut(
-            app.config['PARSERPATH'], demo_path, cut_path, request.form['start'],
-            request.form['end'], request.form['cut_type'], request.form['client_num'])
+            app.config['PARSERPATH'], demo_path, cut_path, request.args.get('start'),
+            request.args.get('end'), request.args.get('cut_type'), request.args.get('client_num'))
     except Exception as e:
         return e.args[0]
     return send_from_directory(directory='cuts',filename=cut_name, as_attachment=True,
